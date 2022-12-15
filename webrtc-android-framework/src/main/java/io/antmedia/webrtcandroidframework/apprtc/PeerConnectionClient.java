@@ -19,6 +19,7 @@ import android.util.Log;
 import android.media.projection.MediaProjection;
 import org.webrtc.AudioSource;
 import org.webrtc.AudioTrack;
+import org.webrtc.Camera2Capturer;
 import org.webrtc.CameraVideoCapturer;
 import org.webrtc.CandidatePairChangeEvent;
 import org.webrtc.DataChannel;
@@ -1319,7 +1320,7 @@ public class PeerConnectionClient implements IDataChannelMessageSender {
     }
   }
 
-  private void switchCameraInternal() {
+  private void switchCameraInternal(final String cameraId) {
     if (videoCapturer instanceof CameraVideoCapturer) {
       if (!isVideoCallEnabled() || isError) {
         Log.e(TAG,
@@ -1328,14 +1329,21 @@ public class PeerConnectionClient implements IDataChannelMessageSender {
       }
       Log.d(TAG, "Switch camera");
       CameraVideoCapturer cameraVideoCapturer = (CameraVideoCapturer) videoCapturer;
-      cameraVideoCapturer.switchCamera(null);
+      if (cameraVideoCapturer instanceof Camera2Capturer) {
+        ((Camera2Capturer) cameraVideoCapturer).switchCamera(null, cameraId);
+      } else {
+        cameraVideoCapturer.switchCamera(null);
+      }
     } else {
       Log.d(TAG, "Will not switch camera, video caputurer is not a camera");
     }
   }
 
   public void switchCamera() {
-    executor.execute(this ::switchCameraInternal);
+    switchCamera(null);
+  }
+  public void switchCamera(final String cameraId) {
+    executor.execute(() -> switchCameraInternal(cameraId));
   }
 
   public void changeCaptureFormat(final int width, final int height, final int framerate) {

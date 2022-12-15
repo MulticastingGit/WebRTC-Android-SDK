@@ -122,6 +122,7 @@ public class WebRTCClient implements IWebRTCClient, AntMediaSignallingEvents, Pe
     private String errorString = null;
     private String streamMode;
     private boolean openFrontCamera = true;
+    private String cameraId = null;
     private VideoCapturer videoCapturer;
 
     private VideoTrack localVideoTrack;
@@ -510,6 +511,16 @@ public class WebRTCClient implements IWebRTCClient, AntMediaSignallingEvents, Pe
 
     private @Nullable VideoCapturer createCameraCapturer(CameraEnumerator enumerator) {
         final String[] deviceNames = enumerator.getDeviceNames();
+        if (cameraId != null) {
+            for (String deviceName : deviceNames) {
+                if (deviceName.equals(cameraId)) {
+                    VideoCapturer videoCapturer = enumerator.createCapturer(deviceName, null);
+                    if (videoCapturer != null) {
+                        return videoCapturer;
+                    }
+                }
+            }
+        }
 
 
         if (openFrontCamera) {
@@ -615,6 +626,13 @@ public class WebRTCClient implements IWebRTCClient, AntMediaSignallingEvents, Pe
         openFrontCamera = !openFrontCamera;
         if (peerConnectionClient != null) {
             peerConnectionClient.switchCamera();
+        }
+    }
+
+    public void switchCamera(String cameraId) {
+        this.cameraId = cameraId;
+        if (peerConnectionClient != null) {
+            peerConnectionClient.switchCamera(cameraId);
         }
     }
 
