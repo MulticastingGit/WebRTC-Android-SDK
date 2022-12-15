@@ -1065,7 +1065,7 @@ public class WebRTCClient implements IWebRTCClient, AntMediaSignallingEvents, Pe
                     }
                 }
             }
-            else {
+            else if (peerConnectionClient != null) {
                 peerConnectionClient.setRemoteDescription(sdp);
             }
         });
