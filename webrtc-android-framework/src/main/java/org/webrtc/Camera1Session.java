@@ -327,4 +327,24 @@ class Camera1Session implements CameraSession {
       throw new IllegalStateException("Wrong thread");
     }
   }
+
+  @Override
+  public boolean isZoomSupported() {
+    return false;
+  }
+  @Override
+  public float getCurrentZoom() {
+    return CameraCapturer.DEFAULT_ZOOM_FACTOR;
+  }
+  @Override
+  public void setCurrentZoom(float zoom) {
+  }
+  @Override
+  public float getMaxZoom() {
+    return CameraCapturer.DEFAULT_ZOOM_FACTOR;
+  }
+  @Override
+  public float getMinZoom() {
+    return CameraCapturer.DEFAULT_ZOOM_FACTOR;
+  }
 }

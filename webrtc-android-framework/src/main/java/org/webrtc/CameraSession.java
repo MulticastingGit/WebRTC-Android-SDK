@@ -39,6 +39,16 @@ interface CameraSession {
    */
   void stop();
 
+  boolean isZoomSupported();
+
+  float getCurrentZoom();
+
+  float getMaxZoom();
+
+  float getMinZoom();
+
+  void setCurrentZoom(float zoom);
+
   static int getDeviceOrientation(Context context) {
     final WindowManager wm = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
     switch (wm.getDefaultDisplay().getRotation()) {
