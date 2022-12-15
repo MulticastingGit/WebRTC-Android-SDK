@@ -1498,6 +1498,9 @@ public class PeerConnectionClient implements IDataChannelMessageSender {
         sdpDescription =
             preferCodec(sdpDescription, getSdpVideoCodecName(peerConnectionParameters), false);
       }
+
+      sdpDescription = sdpDescription.replace("a=extmap:3 urn:3gpp:video-orientation\r\n", "");
+
       final SessionDescription sdp = new SessionDescription(origSdp.type, sdpDescription);
       localSdp = sdp;
       executor.execute(() -> {
