@@ -17,6 +17,7 @@ import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AlertDialog;
 
@@ -30,6 +31,7 @@ import com.android.volley.toolbox.Volley;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.webrtc.DataChannel;
+import org.webrtc.RTCStatsReport;
 import org.webrtc.RendererCommon;
 import org.webrtc.SurfaceViewRenderer;
 
@@ -321,6 +323,10 @@ public class MainActivity extends Activity implements IWebRTCListener, IDataChan
     @Override
     public void onTrackList(String[] tracks) {
 
+    }
+
+    @Override
+    public void onStatsReady(@NonNull RTCStatsReport report) {
     }
 
     @Override

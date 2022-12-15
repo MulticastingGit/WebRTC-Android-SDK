@@ -36,6 +36,7 @@ import org.webrtc.IceCandidate;
 import org.webrtc.Logging;
 import org.webrtc.PeerConnection;
 import org.webrtc.PeerConnectionFactory;
+import org.webrtc.RTCStatsReport;
 import org.webrtc.RendererCommon;
 import org.webrtc.RendererCommon.ScalingType;
 import org.webrtc.ScreenCapturerAndroid;
@@ -147,6 +148,7 @@ public class WebRTCClient implements IWebRTCClient, AntMediaSignallingEvents, Pe
     private String viewerInfo = "";
     private String currentSource;
     private boolean screenPersmisonNeeded = true;
+    private long statsPeriodMs = CallActivity.STAT_CALLBACK_PERIOD;
 
     public MediaProjection mediaProjection;
     public MediaProjectionManager mediaProjectionManager;
@@ -695,7 +697,7 @@ public class WebRTCClient implements IWebRTCClient, AntMediaSignallingEvents, Pe
             return;
         }
         // Enable statistics callback.
-        peerConnectionClient.enableStatsEvents(true, CallActivity.STAT_CALLBACK_PERIOD);
+        if (statsPeriodMs > 0) peerConnectionClient.enableStatsEvents(true, statsPeriodMs);
         setSwappedFeeds(false /* isSwappedFeeds */);
     }
 
@@ -1015,7 +1017,8 @@ public class WebRTCClient implements IWebRTCClient, AntMediaSignallingEvents, Pe
     public void onPeerConnectionClosed() {}
 
     @Override
-    public void onPeerConnectionStatsReady(StatsReport[] reports) {
+    public void onPeerConnectionStatsReady(RTCStatsReport reports) {
+        /*
         this.handler.post(() -> {
             if (!isError && iceConnected) {
                 //hudFragment.updateEncoderStatistics(reports);
@@ -1023,6 +1026,10 @@ public class WebRTCClient implements IWebRTCClient, AntMediaSignallingEvents, Pe
                 Log.i(TAG, reports.toString());
             }
         });
+        */
+        if (!isError && iceConnected && webRTCListener != null && reports != null) {
+            webRTCListener.onStatsReady(reports);
+        }
     }
 
     @Override
@@ -1346,5 +1353,13 @@ public class WebRTCClient implements IWebRTCClient, AntMediaSignallingEvents, Pe
         this.stunServerUri = uri;
         this.stunUsername = username;
         this.stunPassword = password;
+    }
+
+    public void setStatsPeriodMs(long millis) {
+        this.statsPeriodMs = Math.max(millis, 0L);
+    }
+
+    public long getStatsPeriodMs() {
+        return statsPeriodMs;
     }
 }

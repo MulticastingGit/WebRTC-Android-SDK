@@ -24,9 +24,11 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 
 import org.webrtc.DataChannel;
+import org.webrtc.RTCStatsReport;
 import org.webrtc.RendererCommon;
 import org.webrtc.SurfaceViewRenderer;
 
@@ -380,6 +382,10 @@ public class DataChannelActivity extends Activity implements IWebRTCListener, ID
     @Override
     public void onStreamInfoList(String streamId, ArrayList<StreamInfo> streamInfoList) {
 
+    }
+
+    @Override
+    public void onStatsReady(@NonNull RTCStatsReport report) {
     }
 
     @Override

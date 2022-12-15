@@ -1,5 +1,9 @@
 package io.antmedia.webrtcandroidframework;
 
+import androidx.annotation.NonNull;
+
+import org.webrtc.RTCStatsReport;
+
 import java.util.ArrayList;
 
 import de.tavendo.autobahn.WebSocket; /**
@@ -81,4 +85,6 @@ public interface IWebRTCListener {
   * @param streamInfoList
   */
  void onStreamInfoList(String streamId, ArrayList<StreamInfo> streamInfoList);
+
+ void onStatsReady(@NonNull RTCStatsReport report);
 }

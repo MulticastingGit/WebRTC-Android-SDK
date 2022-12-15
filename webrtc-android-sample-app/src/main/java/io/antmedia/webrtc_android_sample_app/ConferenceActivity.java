@@ -13,6 +13,7 @@ import android.widget.Toast;
 
 import org.json.JSONObject;
 import org.webrtc.DataChannel;
+import org.webrtc.RTCStatsReport;
 import org.webrtc.SurfaceViewRenderer;
 
 import java.nio.ByteBuffer;
@@ -29,6 +30,8 @@ import io.antmedia.webrtcandroidframework.WebRTCClient;
 import io.antmedia.webrtcandroidframework.apprtc.CallActivity;
 
 import static io.antmedia.webrtcandroidframework.apprtc.CallActivity.EXTRA_CAPTURETOTEXTURE_ENABLED;
+
+import androidx.annotation.NonNull;
 
 public class ConferenceActivity extends Activity implements IWebRTCListener, IDataChannelObserver {
 
@@ -222,6 +225,10 @@ public class ConferenceActivity extends Activity implements IWebRTCListener, IDa
     @Override
     public void onStateChange(DataChannel.State state, String dataChannelLabel) {
 
+    }
+
+    @Override
+    public void onStatsReady(@NonNull RTCStatsReport report) {
     }
 
     @Override

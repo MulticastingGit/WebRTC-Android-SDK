@@ -34,6 +34,8 @@ import org.webrtc.PeerConnection;
 import org.webrtc.PeerConnection.IceConnectionState;
 import org.webrtc.PeerConnection.PeerConnectionState;
 import org.webrtc.PeerConnectionFactory;
+import org.webrtc.RTCStatsCollectorCallback;
+import org.webrtc.RTCStatsReport;
 import org.webrtc.RtpParameters;
 import org.webrtc.RtpReceiver;
 import org.webrtc.RtpSender;
@@ -419,7 +421,7 @@ public class PeerConnectionClient implements IDataChannelMessageSender {
     /**
      * Callback fired once peer connection statistics is ready.
      */
-    void onPeerConnectionStatsReady(final StatsReport[] reports);
+    void onPeerConnectionStatsReady(final RTCStatsReport reports);
 
     /**
      * Callback fired once peer connection error happened.
@@ -873,6 +875,7 @@ public class PeerConnectionClient implements IDataChannelMessageSender {
     if (peerConnection == null || isError) {
       return;
     }
+    /*
     boolean success = peerConnection.getStats(new StatsObserver() {
       @Override
       public void onComplete(final StatsReport[] reports) {
@@ -882,9 +885,16 @@ public class PeerConnectionClient implements IDataChannelMessageSender {
     if (!success) {
       //Log.e(TAG, "getStats() returns false!");
     }
+    */
+    peerConnection.getStats(new RTCStatsCollectorCallback() {
+      @Override
+      public void onStatsDelivered(RTCStatsReport report) {
+        events.onPeerConnectionStatsReady(report);
+      }
+    });
   }
 
-  public void enableStatsEvents(boolean enable, int periodMs) {
+  public void enableStatsEvents(boolean enable, long periodMs) {
     if (enable) {
       try {
         statsTimer.schedule(new TimerTask() {

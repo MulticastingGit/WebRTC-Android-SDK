@@ -13,8 +13,10 @@ import android.widget.CompoundButton;
 import android.widget.Toast;
 import android.widget.ToggleButton;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 
+import org.webrtc.RTCStatsReport;
 import org.webrtc.RendererCommon;
 import org.webrtc.SurfaceViewRenderer;
 
@@ -248,5 +250,9 @@ public class MultiTrackPlayActivity extends Activity implements IWebRTCListener 
     @Override
     public void onStreamInfoList(String streamId, ArrayList<StreamInfo> streamInfoList) {
 
+    }
+
+    @Override
+    public void onStatsReady(@NonNull RTCStatsReport report) {
     }
 }

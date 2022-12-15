@@ -13,11 +13,13 @@ import android.widget.Button;
 import android.widget.RadioGroup;
 import android.widget.Toast;
 
+import org.webrtc.RTCStatsReport;
 import org.webrtc.RendererCommon;
 import org.webrtc.SurfaceViewRenderer;
 
 import java.util.ArrayList;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 import de.tavendo.autobahn.WebSocket;
 import io.antmedia.webrtcandroidframework.IWebRTCClient;
@@ -230,6 +232,8 @@ public class ScreenCaptureActivity extends Activity implements IWebRTCListener {
 
     }
 
-
+    @Override
+    public void onStatsReady(@NonNull RTCStatsReport report) {
+    }
 }
 

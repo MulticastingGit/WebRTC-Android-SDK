@@ -15,6 +15,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import org.webrtc.DataChannel;
+import org.webrtc.RTCStatsReport;
 import org.webrtc.RendererCommon;
 import org.webrtc.SurfaceViewRenderer;
 
@@ -22,6 +23,7 @@ import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 import de.tavendo.autobahn.WebSocket;
 import io.antmedia.webrtcandroidframework.IDataChannelObserver;
@@ -235,6 +237,10 @@ public class DataChannelOnlyActivity extends Activity implements IWebRTCListener
 
     @Override
     public void onStreamInfoList(String streamId, ArrayList<StreamInfo> streamInfoList) {
+    }
+
+    @Override
+    public void onStatsReady(@NonNull RTCStatsReport report) {
     }
 
     @Override
