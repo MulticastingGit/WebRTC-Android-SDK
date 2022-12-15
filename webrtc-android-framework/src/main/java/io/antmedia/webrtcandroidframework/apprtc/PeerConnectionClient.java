@@ -291,7 +291,7 @@ public class PeerConnectionClient implements IDataChannelMessageSender {
     public final String protocol;
     public final boolean negotiated;
     public final int id;
-    public final String label;
+    public String label;
     public final boolean isDataChannelCreator;
 
     public DataChannelParameters(boolean ordered, int maxRetransmitTimeMs, int maxRetransmits,
@@ -332,7 +332,7 @@ public class PeerConnectionClient implements IDataChannelMessageSender {
     public final boolean disableBuiltInNS;
     public final boolean disableWebRtcAGCAndHPF;
     public final boolean enableRtcEventLog;
-    private final DataChannelParameters dataChannelParameters;
+    public final DataChannelParameters dataChannelParameters;
     public boolean audioCallEnabled;
 
     public PeerConnectionParameters(boolean videoCallEnabled, boolean loopback, boolean tracing,

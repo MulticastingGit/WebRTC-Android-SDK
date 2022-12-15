@@ -1324,4 +1324,16 @@ public class WebRTCClient implements IWebRTCClient, AntMediaSignallingEvents, Pe
     public void setPeerConnectionParametersForTest(@Nullable PeerConnectionClient.PeerConnectionParameters peerConnectionParameters) {
         this.peerConnectionParameters = peerConnectionParameters;
     }
+
+    public void updatePublishParamsAfterInit(String url, String streamId) {
+        if (peerConnectionClient == null || roomConnectionParameters == null || url == null | streamId == null) return;
+
+        this.url = url;
+        this.streamId = streamId;
+        roomConnectionParameters =
+                new AppRTCClient.RoomConnectionParameters(url, streamId, roomConnectionParameters.loopback, roomConnectionParameters.urlParameters, roomConnectionParameters.mode ,token);
+        if (peerConnectionParameters != null && peerConnectionParameters.dataChannelParameters != null) {
+            peerConnectionParameters.dataChannelParameters.label = streamId;
+        }
+    }
 }
