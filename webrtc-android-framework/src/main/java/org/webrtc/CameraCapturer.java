@@ -27,7 +27,6 @@ abstract public class CameraCapturer implements CameraVideoCapturer {
     IN_PROGRESS, // Waiting for new switched capture session to start.
   }
 
-  public static final float DEFAULT_ZOOM_FACTOR = 1.0f;
   private static final String TAG = "CameraCapturer";
   private final static int MAX_OPEN_CAMERA_ATTEMPTS = 3;
   private final static int OPEN_CAMERA_DELAY_MS = 500;
@@ -454,34 +453,11 @@ abstract public class CameraCapturer implements CameraVideoCapturer {
     }
   }
 
-  public boolean isZoomSupported() {
+  public CameraSessionHolder getSessionHolder() {
     if (currentSession != null) {
-      return currentSession.isZoomSupported();
+      return currentSession.getSessionHolder();
     }
-    return false;
-  }
-  public float getCurrentZoom() {
-    if (currentSession != null) {
-      return currentSession.getCurrentZoom();
-    }
-    return DEFAULT_ZOOM_FACTOR;
-  }
-  public float getMinZoom() {
-    if (currentSession != null) {
-      return currentSession.getMinZoom();
-    }
-    return DEFAULT_ZOOM_FACTOR;
-  }
-  public float getMaxZoom() {
-    if (currentSession != null) {
-      return currentSession.getMaxZoom();
-    }
-    return DEFAULT_ZOOM_FACTOR;
-  }
-  public void setCurrentZoom(float zoom) {
-    if (currentSession != null) {
-      currentSession.setCurrentZoom(zoom);
-    }
+    return null;
   }
 
   abstract protected void createCameraSession(

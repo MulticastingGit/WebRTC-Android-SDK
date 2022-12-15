@@ -14,6 +14,8 @@ import android.content.Context;
 import android.os.Handler;
 import android.os.SystemClock;
 
+import androidx.annotation.Nullable;
+
 import org.webrtc.CameraEnumerationAndroid.CaptureFormat;
 
 import java.io.IOException;
@@ -328,23 +330,9 @@ class Camera1Session implements CameraSession {
     }
   }
 
+  @Nullable
   @Override
-  public boolean isZoomSupported() {
-    return false;
-  }
-  @Override
-  public float getCurrentZoom() {
-    return CameraCapturer.DEFAULT_ZOOM_FACTOR;
-  }
-  @Override
-  public void setCurrentZoom(float zoom) {
-  }
-  @Override
-  public float getMaxZoom() {
-    return CameraCapturer.DEFAULT_ZOOM_FACTOR;
-  }
-  @Override
-  public float getMinZoom() {
-    return CameraCapturer.DEFAULT_ZOOM_FACTOR;
+  public CameraSessionHolder getSessionHolder() {
+    return null;
   }
 }

@@ -21,7 +21,6 @@ import android.hardware.camera2.CameraManager;
 import android.hardware.camera2.CameraMetadata;
 import android.hardware.camera2.CaptureFailure;
 import android.hardware.camera2.CaptureRequest;
-import android.os.Build;
 import android.os.Handler;
 import androidx.core.math.MathUtils;
 import android.util.Range;
@@ -65,13 +64,6 @@ class Camera2Session implements CameraSession {
   private boolean isCameraFrontFacing;
   private int fpsUnitFactor;
   private CaptureFormat captureFormat;
-  private float currentZoom = CameraCapturer.DEFAULT_ZOOM_FACTOR;
-  private final boolean supportsNewZoom;
-  private final float maxZoom;
-  private final float minZoom;
-  @Nullable private final Rect sensorSize;
-  private boolean zoomSupported;
-  private final Rect cropRegion = new Rect();
 
   // Initialized when camera opens
   @Nullable private CameraDevice cameraDevice;
@@ -79,7 +71,7 @@ class Camera2Session implements CameraSession {
 
   // Initialized when capture session is created
   @Nullable private CameraCaptureSession captureSession;
-  @Nullable private CaptureRequest.Builder requestBuilder;
+  @Nullable private Camera2SessionHolder sessionHolder;
 
   // State
   private SessionState state = SessionState.RUNNING;
@@ -118,14 +110,14 @@ class Camera2Session implements CameraSession {
       } else {
         events.onCameraDisconnected(Camera2Session.this);
       }
-      clearZoom();
+      clearSessionHolder();
     }
 
     @Override
     public void onError(CameraDevice camera, int errorCode) {
       checkIsOnCameraThread();
       reportError(getErrorDescription(errorCode));
-      clearZoom();
+      clearSessionHolder();
     }
 
     @Override
@@ -152,7 +144,7 @@ class Camera2Session implements CameraSession {
 
       Logging.d(TAG, "Camera device closed.");
       events.onCameraClosed(Camera2Session.this);
-      clearZoom();
+      clearSessionHolder();
     }
   }
 
@@ -162,7 +154,7 @@ class Camera2Session implements CameraSession {
       checkIsOnCameraThread();
       session.close();
       reportError("Failed to configure capture session.");
-      clearZoom();
+      clearSessionHolder();
     }
 
     @Override
@@ -191,8 +183,8 @@ class Camera2Session implements CameraSession {
         chooseFocusMode(captureRequestBuilder);
 
         captureRequestBuilder.addTarget(surface);
-        setZoomOn(captureRequestBuilder, currentZoom);
-        requestBuilder = captureRequestBuilder;
+        sessionHolder = new Camera2SessionHolder(cameraDevice, session, captureRequestBuilder,
+                surface, cameraThreadHandler, captureFormat);
         session.setRepeatingRequest(
             captureRequestBuilder.build(), new CameraCaptureCallback(), cameraThreadHandler);
       } catch (CameraAccessException e) {
@@ -314,28 +306,6 @@ class Camera2Session implements CameraSession {
     this.framerate = framerate;
 
     start();
-    final Range<Float> newRange;
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-      newRange = cameraCharacteristics.get(CameraCharacteristics.CONTROL_ZOOM_RATIO_RANGE);
-    } else {
-      newRange = null;
-    }
-    sensorSize = cameraCharacteristics.get(CameraCharacteristics.SENSOR_INFO_ACTIVE_ARRAY_SIZE);
-    final Float maxDigital = cameraCharacteristics.get(CameraCharacteristics.SCALER_AVAILABLE_MAX_DIGITAL_ZOOM);
-    if (newRange != null && newRange.getUpper() > CameraCapturer.DEFAULT_ZOOM_FACTOR && newRange.getLower() <= CameraCapturer.DEFAULT_ZOOM_FACTOR) {
-      maxZoom = newRange.getUpper();
-      minZoom = newRange.getLower();
-      supportsNewZoom = true;
-    } else if (maxDigital != null && maxDigital > CameraCapturer.DEFAULT_ZOOM_FACTOR && sensorSize != null) {
-      maxZoom = maxDigital;
-      minZoom = CameraCapturer.DEFAULT_ZOOM_FACTOR;
-      supportsNewZoom = false;
-    } else {
-      maxZoom = CameraCapturer.DEFAULT_ZOOM_FACTOR;
-      minZoom = CameraCapturer.DEFAULT_ZOOM_FACTOR;
-      supportsNewZoom = false;
-    }
-    zoomSupported = maxZoom > CameraCapturer.DEFAULT_ZOOM_FACTOR;
   }
 
   private void start() {
@@ -485,58 +455,13 @@ class Camera2Session implements CameraSession {
     }
   }
 
-  public boolean isZoomSupported() {
-    return zoomSupported;
-  }
-
-  public float getCurrentZoom() {
-    return currentZoom;
-  }
-
-  public void setCurrentZoom(float zoom) {
-    float clamped = MathUtils.clamp(zoom, CameraCapturer.DEFAULT_ZOOM_FACTOR, maxZoom);
-    if (currentZoom == clamped) return;
-    currentZoom = clamped;
-    if (captureSession != null && requestBuilder != null) {
-      try {
-        setZoomOn(requestBuilder, currentZoom);
-        captureSession.setRepeatingRequest(requestBuilder.build(), new CameraCaptureCallback(), cameraThreadHandler);
-      } catch (CameraAccessException e) {
-        reportError("Failed to start capture request. " + e);
-      }
-    }
-  }
-
+  @Nullable
   @Override
-  public float getMaxZoom() {
-    return maxZoom;
+  public CameraSessionHolder getSessionHolder() {
+    return sessionHolder;
   }
 
-  @Override
-  public float getMinZoom() {
-    return minZoom;
-  }
-
-  private void setZoomOn(CaptureRequest.Builder builder, float zoom) {
-    if (!zoomSupported) return;
-    final float newZoom = MathUtils.clamp(zoom, minZoom, maxZoom);
-    if (supportsNewZoom && Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-      builder.set(CaptureRequest.CONTROL_ZOOM_RATIO, newZoom);
-    } else {
-      final int centerX = sensorSize.width() / 2;
-      final int centerY = sensorSize.height() / 2;
-      final int deltaX  = (int)((0.5f * sensorSize.width()) / newZoom);
-      final int deltaY  = (int)((0.5f * sensorSize.height()) / newZoom);
-      cropRegion.set(centerX - deltaX,
-              centerY - deltaY,
-              centerX + deltaX,
-              centerY + deltaY);
-      builder.set(CaptureRequest.SCALER_CROP_REGION, cropRegion);
-    }
-  }
-
-  private void clearZoom() {
-    requestBuilder = null;
-    currentZoom = CameraCapturer.DEFAULT_ZOOM_FACTOR;
+  private void clearSessionHolder() {
+    sessionHolder = null;
   }
 }

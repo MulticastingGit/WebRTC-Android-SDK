@@ -15,6 +15,8 @@ import android.graphics.Matrix;
 import android.view.Surface;
 import android.view.WindowManager;
 
+import androidx.annotation.Nullable;
+
 interface CameraSession {
   enum FailureType { ERROR, DISCONNECTED }
 
@@ -39,15 +41,8 @@ interface CameraSession {
    */
   void stop();
 
-  boolean isZoomSupported();
-
-  float getCurrentZoom();
-
-  float getMaxZoom();
-
-  float getMinZoom();
-
-  void setCurrentZoom(float zoom);
+  @Nullable
+  CameraSessionHolder getSessionHolder();
 
   static int getDeviceOrientation(Context context) {
     final WindowManager wm = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
