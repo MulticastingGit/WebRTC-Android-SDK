@@ -431,7 +431,9 @@ public class WebRTCClient implements IWebRTCClient, AntMediaSignallingEvents, Pe
     };
 
     public void setBitrate(int bitrate) {
-        peerConnectionClient.setVideoMaxBitrate(bitrate);
+        if (peerConnectionClient != null) {
+            peerConnectionClient.setVideoMaxBitrate(bitrate);
+        }
     }
 
     public void startStream() {
@@ -950,7 +952,7 @@ public class WebRTCClient implements IWebRTCClient, AntMediaSignallingEvents, Pe
                     wsHandler.sendConfiguration(roomConnectionParameters.roomId, sdp, "answer");
                 }
             }
-            if (peerConnectionParameters.videoMaxBitrate > 0) {
+            if (peerConnectionClient != null && peerConnectionParameters != null && peerConnectionParameters.videoMaxBitrate > 0) {
                 Log.d(TAG, "Set video maximum bitrate: " + peerConnectionParameters.videoMaxBitrate);
                 peerConnectionClient.setVideoMaxBitrate(peerConnectionParameters.videoMaxBitrate);
             }
