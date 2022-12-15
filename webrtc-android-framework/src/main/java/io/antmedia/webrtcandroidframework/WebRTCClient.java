@@ -128,6 +128,8 @@ public class WebRTCClient implements IWebRTCClient, AntMediaSignallingEvents, Pe
     private Handler handler = new Handler();
     private WebSocketHandler wsHandler;
     private String stunServerUri = "stun:stun1.l.google.com:19302";
+    private String stunUsername = "";
+    private String stunPassword = "";
     List<PeerConnection.IceServer> iceServers = new ArrayList();
     private boolean videoOn = true;
     private boolean audioOn = true;
@@ -215,7 +217,8 @@ public class WebRTCClient implements IWebRTCClient, AntMediaSignallingEvents, Pe
         iceConnected = false;
         signalingParameters = null;
 
-        iceServers.add(new PeerConnection.IceServer(stunServerUri));
+        Log.i(TAG, "Init with stun server " + stunServerUri);
+        iceServers.add(new PeerConnection.IceServer(stunServerUri, stunUsername, stunPassword));
 
 
 
@@ -1337,5 +1340,11 @@ public class WebRTCClient implements IWebRTCClient, AntMediaSignallingEvents, Pe
         if (peerConnectionParameters != null && peerConnectionParameters.dataChannelParameters != null) {
             peerConnectionParameters.dataChannelParameters.label = streamId;
         }
+    }
+
+    public void updateStunServer(String uri, String username, String password) {
+        this.stunServerUri = uri;
+        this.stunUsername = username;
+        this.stunPassword = password;
     }
 }
