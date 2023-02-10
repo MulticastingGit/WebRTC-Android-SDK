@@ -2,14 +2,17 @@ package io.antmedia.webrtc_android_sample_app;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.RadioGroup;
 import android.widget.Toast;
 
@@ -21,6 +24,9 @@ import java.util.ArrayList;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
+import androidx.test.espresso.IdlingResource;
+import androidx.test.espresso.idling.CountingIdlingResource;
+
 import de.tavendo.autobahn.WebSocket;
 import io.antmedia.webrtcandroidframework.IWebRTCClient;
 import io.antmedia.webrtcandroidframework.IWebRTCListener;
@@ -32,6 +38,13 @@ public class ScreenCaptureActivity extends Activity implements IWebRTCListener {
 
     private WebRTCClient webRTCClient;
     private RadioGroup bg;
+    private String tokenId = "tokenId";
+    private String serverUrl;
+    private EditText streamIdEditText;
+
+    public CountingIdlingResource idlingResource = new CountingIdlingResource("Load", true);
+    private View broadcastingView;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,7 +63,11 @@ public class ScreenCaptureActivity extends Activity implements IWebRTCListener {
 
         webRTCClient = new WebRTCClient(this, this);
 
+        streamIdEditText = findViewById(R.id.stream_id_edittext);
+        streamIdEditText.setText("streamId" + (int)(Math.random()*99999));
         //webRTCClient.setOpenFrontCamera(false);
+
+        broadcastingView = findViewById(R.id.broadcasting_text_view);
 
         SurfaceViewRenderer cameraViewRenderer = findViewById(R.id.camera_view_renderer);
 
@@ -98,11 +115,15 @@ public class ScreenCaptureActivity extends Activity implements IWebRTCListener {
             }
         });
 
-        String streamId = "stream36";
-        String tokenId = "tokenId";
-        String url = "ws://192.168.1.28:5080/WebRTCAppEE/websocket";
+        SharedPreferences sharedPreferences =
+                PreferenceManager.getDefaultSharedPreferences(this /* Activity context */);
+        String serverAddress = sharedPreferences.getString(getString(R.string.serverAddress), SettingsActivity.DEFAULT_SERVER_ADDRESS);
+        String serverPort = sharedPreferences.getString(getString(R.string.serverPort), SettingsActivity.DEFAULT_SERVER_PORT);
 
-        webRTCClient.init(url, streamId, IWebRTCClient.MODE_PUBLISH, tokenId,  this.getIntent());
+        String websocketUrlScheme = serverPort.equals("5443") ? "wss://" : "ws://";
+        serverUrl = websocketUrlScheme + serverAddress + ":" + serverPort + "/" + SettingsActivity.DEFAULT_APP_NAME + "/websocket";
+
+        webRTCClient.init(serverUrl, streamIdEditText.getText().toString(), IWebRTCClient.MODE_PUBLISH, tokenId,  this.getIntent());
     }
 
     @Override
@@ -127,6 +148,9 @@ public class ScreenCaptureActivity extends Activity implements IWebRTCListener {
 
     public void startStreaming(View v) {
 
+        webRTCClient.setStreamId(streamIdEditText.getText().toString());
+        idlingResource.increment();
+
         if (!webRTCClient.isStreaming()) {
             ((Button)v).setText("Stop Streaming");
             webRTCClient.startStream();
@@ -136,6 +160,13 @@ public class ScreenCaptureActivity extends Activity implements IWebRTCListener {
             webRTCClient.stopStream();
         }
     }
+
+    private void decrementIdle() {
+        if (!idlingResource.isIdleNow()) {
+            idlingResource.decrement();
+        }
+    }
+
 
     public void switchCamera(View v) {
         webRTCClient.switchCamera();
@@ -152,12 +183,16 @@ public class ScreenCaptureActivity extends Activity implements IWebRTCListener {
     public void onPublishStarted(String streamId) {
         Log.w(getClass().getSimpleName(), "onPublishStarted");
         Toast.makeText(this, "Publish started", Toast.LENGTH_LONG).show();
+        broadcastingView.setVisibility(View.VISIBLE);
+        decrementIdle();
     }
 
     @Override
     public void onPublishFinished(String streamId) {
         Log.w(getClass().getSimpleName(), "onPublishFinished");
         Toast.makeText(this, "Publish finished", Toast.LENGTH_LONG).show();
+        broadcastingView.setVisibility(View.GONE);
+        decrementIdle();
     }
 
     @Override
@@ -176,11 +211,14 @@ public class ScreenCaptureActivity extends Activity implements IWebRTCListener {
     public void streamIdInUse(String streamId) {
         Log.w(getClass().getSimpleName(), "streamIdInUse");
         Toast.makeText(this, "Stream id is already in use.", Toast.LENGTH_LONG).show();
+        decrementIdle();
     }
 
     @Override
     public void onError(String description, String streamId) {
+        Log.w(getClass().getSimpleName(), "onError:" + description);
         Toast.makeText(this, "Error: "  +description , Toast.LENGTH_LONG).show();
+        decrementIdle();
     }
 
     @Override
@@ -192,8 +230,6 @@ public class ScreenCaptureActivity extends Activity implements IWebRTCListener {
     protected void onDestroy() {
         super.onDestroy();
         webRTCClient.stopStream();
-
-        //webRTCClient.releaseResources();
     }
 
     @Override
@@ -205,6 +241,8 @@ public class ScreenCaptureActivity extends Activity implements IWebRTCListener {
     public void onDisconnected(String streamId) {
         Log.w(getClass().getSimpleName(), "disconnected");
         Toast.makeText(this, "Disconnected", Toast.LENGTH_LONG).show();
+        broadcastingView.setVisibility(View.GONE);
+        decrementIdle();
     }
 
     @Override
@@ -234,6 +272,10 @@ public class ScreenCaptureActivity extends Activity implements IWebRTCListener {
 
     @Override
     public void onStatsReady(@NonNull RTCStatsReport report) {
+    }
+
+    public IdlingResource getIdlingResource() {
+        return idlingResource;
     }
 }
 
