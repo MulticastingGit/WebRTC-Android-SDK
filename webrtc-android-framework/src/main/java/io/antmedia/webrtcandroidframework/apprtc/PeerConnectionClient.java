@@ -43,6 +43,7 @@ import org.webrtc.AddIceObserver;
 import android.media.projection.MediaProjection;
 import org.webrtc.AudioSource;
 import org.webrtc.AudioTrack;
+import org.webrtc.Camera2Capturer;
 import org.webrtc.CameraVideoCapturer;
 import org.webrtc.CandidatePairChangeEvent;
 import org.webrtc.DataChannel;

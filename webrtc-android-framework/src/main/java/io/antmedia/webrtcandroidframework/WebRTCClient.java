@@ -1061,8 +1061,8 @@ public class WebRTCClient implements IWebRTCClient, AntMediaSignallingEvents, Pe
             }
         });
         */
-        if (!isError && iceConnected && webRTCListener != null && reports != null) {
-            webRTCListener.onStatsReady(reports);
+        if (!isError && iceConnected && webRTCListener != null && report != null) {
+            webRTCListener.onStatsReady(report);
         }
     }
 
