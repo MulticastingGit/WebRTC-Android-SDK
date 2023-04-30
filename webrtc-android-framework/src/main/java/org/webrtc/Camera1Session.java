@@ -14,11 +14,12 @@ import android.content.Context;
 import android.hardware.Camera;
 import android.os.Handler;
 import android.os.SystemClock;
+import androidx.annotation.Nullable;
+import org.webrtc.CameraEnumerationAndroid.CaptureFormat;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
-import org.webrtc.CameraEnumerationAndroid.CaptureFormat;
 
 @SuppressWarnings("deprecation")
 class Camera1Session implements CameraSession {
@@ -336,5 +337,11 @@ class Camera1Session implements CameraSession {
     if (Thread.currentThread() != cameraThreadHandler.getLooper().getThread()) {
       throw new IllegalStateException("Wrong thread");
     }
+  }
+
+  @Nullable
+  @Override
+  public CameraSessionHolder getSessionHolder() {
+    return null;
   }
 }

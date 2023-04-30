@@ -15,6 +15,8 @@ import android.graphics.Matrix;
 import android.view.WindowManager;
 import android.view.Surface;
 
+import androidx.annotation.Nullable;
+
 interface CameraSession {
   enum FailureType { ERROR, DISCONNECTED }
 
@@ -38,6 +40,9 @@ interface CameraSession {
    * If waitCameraStop is true, also waits for the camera to stop.
    */
   void stop();
+
+  @Nullable
+  CameraSessionHolder getSessionHolder();
 
   static int getDeviceOrientation(Context context) {
     final WindowManager wm = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);

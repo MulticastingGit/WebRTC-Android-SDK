@@ -21,11 +21,13 @@ import android.widget.EditText;
 import android.widget.RadioGroup;
 import android.widget.Toast;
 
+import org.webrtc.RTCStatsReport;
 import org.webrtc.RendererCommon;
 import org.webrtc.SurfaceViewRenderer;
 
 import java.util.ArrayList;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 import androidx.test.espresso.IdlingResource;
 import androidx.test.espresso.idling.CountingIdlingResource;
@@ -283,10 +285,12 @@ public class ScreenCaptureActivity extends Activity implements IWebRTCListener {
 
     }
 
+    @Override
+    public void onStatsReady(@NonNull RTCStatsReport report) {
+    }
+
     public IdlingResource getIdlingResource() {
         return idlingResource;
     }
-
-
 }
 

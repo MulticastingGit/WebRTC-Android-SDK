@@ -11,6 +11,7 @@
 package org.webrtc;
 
 import android.content.Context;
+import android.graphics.Rect;
 import android.hardware.camera2.CameraAccessException;
 import android.hardware.camera2.CameraCaptureSession;
 import android.hardware.camera2.CameraCharacteristics;
@@ -20,6 +21,7 @@ import android.hardware.camera2.CameraMetadata;
 import android.hardware.camera2.CaptureFailure;
 import android.hardware.camera2.CaptureRequest;
 import android.os.Handler;
+import androidx.core.math.MathUtils;
 import android.util.Range;
 import android.view.Surface;
 import androidx.annotation.Nullable;
@@ -64,6 +66,7 @@ class Camera2Session implements CameraSession {
 
   // Initialized when capture session is created
   @Nullable private CameraCaptureSession captureSession;
+  @Nullable private Camera2SessionHolder sessionHolder;
 
   // State
   private SessionState state = SessionState.RUNNING;
@@ -102,12 +105,14 @@ class Camera2Session implements CameraSession {
       } else {
         events.onCameraDisconnected(Camera2Session.this);
       }
+      clearSessionHolder();
     }
 
     @Override
     public void onError(CameraDevice camera, int errorCode) {
       checkIsOnCameraThread();
       reportError(getErrorDescription(errorCode));
+      clearSessionHolder();
     }
 
     @Override
@@ -134,6 +139,7 @@ class Camera2Session implements CameraSession {
 
       Logging.d(TAG, "Camera device closed.");
       events.onCameraClosed(Camera2Session.this);
+      clearSessionHolder();
     }
   }
 
@@ -143,6 +149,7 @@ class Camera2Session implements CameraSession {
       checkIsOnCameraThread();
       session.close();
       reportError("Failed to configure capture session.");
+      clearSessionHolder();
     }
 
     @Override
@@ -171,6 +178,8 @@ class Camera2Session implements CameraSession {
         chooseFocusMode(captureRequestBuilder);
 
         captureRequestBuilder.addTarget(surface);
+        sessionHolder = new Camera2SessionHolder(cameraDevice, session, captureRequestBuilder,
+                surface, cameraThreadHandler, captureFormat);
         session.setRepeatingRequest(
             captureRequestBuilder.build(), new CameraCaptureCallback(), cameraThreadHandler);
       } catch (CameraAccessException e) {
@@ -422,5 +431,15 @@ class Camera2Session implements CameraSession {
     if (Thread.currentThread() != cameraThreadHandler.getLooper().getThread()) {
       throw new IllegalStateException("Wrong thread");
     }
+  }
+
+  @Nullable
+  @Override
+  public CameraSessionHolder getSessionHolder() {
+    return sessionHolder;
+  }
+
+  private void clearSessionHolder() {
+    sessionHolder = null;
   }
 }
